@@ -76,43 +76,62 @@ class RaffleController extends Controller
             ],200);
 
         }
-
-
         
-
-        
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Raffle $raffle)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Raffle $raffle)
-    {
-        //
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Raffle $raffle)
+    public function update(Request $request, int $id)
     {
-        //
+        $rules = [
+            'identification_number' => 'required|string',
+            'name' => 'required|string',
+            'abono' => 'required|string',
+            'buying_date' => 'date_format:Y-m-d|max:10|nullable',
+            'numbers' => 'required',
+            'methodOfPayment'=>'required|string',
+            'responsible'=>'required|string',
+        ];
+
+        $validator= Validator::make($request->input(), $rules);
+        if($validator->fails()){
+            return response()->json([
+                'status'=> false,
+                'errors'=> $validator->errors()->all()
+            ], 400);
+        }
+
+        //$raffle =Raffle::findOrFail($id)->update($request->input());
+            $raffle = Raffle::find($id);
+            $raffle->identification_number = $request->input('identification_number');
+            $raffle->name = $request->input('name');
+            $raffle->abono = $request->input('abono');
+            $raffle->buying_date = $request->input('buying_date');
+            $raffle->methodOfPayment = $request->input('methodOfPayment');
+            $raffle->numbers = $request->input('numbers');
+            $raffle->responsible= $request->input('responsible');
+            if($request->reference) {
+                $raffle->reference= $request->input('reference');
+            }
+            $raffle->update();
+            return response()->json([
+                'status'=> true,
+                'message'=> 'Actualizacion exitosa!',
+                'data'=> $raffle
+            ],200);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Raffle $raffle)
+    public function destroy($id)
     {
-        //
+        Raffle::find($id)->delete();
+        return response()->json([
+            'status'=> true,
+            'message'=> 'Eliminación exitosa'
+        ], 200);
     }
 
     public function balance(){
